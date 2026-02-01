@@ -1,0 +1,62 @@
+[project]
+name = "chatmanager"
+version = "0.0.1"
+description = "Telegram group & channel management bot"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Jack Backer", email = "jackbacker90@tutamail.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Communications :: Chat",
+    "Typing :: Typed",
+]
+license = "MIT"
+license-files = ["LICENSE"]
+
+dependencies = [
+  "aiogram==3.24.0",
+  "aiosqlite==0.22.1",
+  "httpx==0.28.1",
+  "pydantic==2.12.5",
+  "python-dotenv==1.2.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-asyncio>=0.23.0",
+]
+censor-ai = [
+  "transformers>=4.40.0",
+  "torch>=2.0.0",
+]
+
+[project.scripts]
+chatmanager-bot = "telegram_bot.main:run"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["telegram_bot"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+fix = true
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"

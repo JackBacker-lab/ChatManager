@@ -1,0 +1,119 @@
+{
+    "moderation": {
+        "mute": {
+            "success": "🔇 {admin_name} muted {target_names}.",
+            "error": "❗ Error while muting: {e}"
+        },
+        "unmute": {
+            "success": "🔊 {admin_name} unmuted {target_names}.",
+            "error": "❗ Error while unmuting: {e}",
+            "callback": {
+                "success": "🔊 Unmuted: {target_names}"
+            }
+        },
+        "ban": {
+            "success": "🚫 {admin_name} banned {target_names}.",
+            "error": "❗ Error while banning: {e}"
+        },
+        "unban": {
+            "success": "🔓 {admin_name} unbanned {target_names}.",
+            "error": "❗ Error while unbanning: {e}",
+            "callback": {
+                "success": "🔓 Unbanned: {target_names}"
+            }
+        },
+        "kick": {
+            "success": "🚫 {admin_name} kicked {target_names}.",
+            "error": "❗ Error while kicking: {e}"
+        },
+        "warn": {
+            "success": "⚠ {target_names} received a warning from {admin_name}.",
+            "error": "❗ Error while issuing a warning: {e}",
+            "limit_reached": "⚠ {display_name} received 3 warnings and will be banned.",
+            "display": "ℹ {display_name} has {count} warning(s)."
+        },
+        "reset_warns": {
+            "success": "✅ Warnings for {target_names} were reset.",
+            "error": "❗ Error while resetting warnings: {e}"
+        },
+        "modes": {
+            "censorship": {
+                "on": "ℹ Censorship is enabled in this chat.",
+                "off": "ℹ Censorship is disabled in this chat."
+            },
+            "antispam": {
+                "on": "ℹ Antispam is enabled in this chat.",
+                "off": "ℹ Antispam is disabled in this chat."
+            }
+        },
+        "delete_message": {
+            "success": "⛔ The message has been deleted.",
+            "error": "❗ Failed to delete the message: {e}"
+        },
+        "censor": {
+            "error": "❗ Error while checking the message: {e}"
+        },
+        "common": {
+            "canceled": "❌ Canceled",
+            "unidentified_members": "❌ Could not recognize member(s): {target_names}.",
+            "skipped_members": "⏭️ Skipped members: {target_names}.",
+            "no_target_members": "❗ Please specify a username, ID, or reply to a user's message.",
+            "duration": "Duration: {duration}.",
+            "reason": "Reason: {reason}",
+            "message_not_found": "Message not found."
+        },
+        "filters": {
+            "display": "📋 Current moderation filters:\n\n{summary}",
+            "state": {
+                "on": "ON",
+                "off": "OFF"
+            },
+            "censorship": {
+                "header": "🔍 Censorship: {state}",
+                "similarity": "  • Similarity: {similarity}",
+                "languages": "  • Languages: {languages}",
+                "ai": "  • AI: {state} (threshold: {threshold})"
+            },
+            "flood": {
+                "header": "💬 Flood control: {state}",
+                "limit": "  • Limit: {limit} messages / {window}s",
+                "mute": "  • Mute: {mute}s"
+            },
+            "spam": {
+                "header": "🛡️ Spam filters: {state}",
+                "links": "  • Links: {state}",
+                "caps": "  • Caps: {state} (ratio ≥ {ratio}, min length: {min_length})",
+                "user_mentions": "  • Mentions: {state} (max: {max})",
+                "gibberish": "  • Gibberish / numeric spam: {state}"
+            }
+        },
+        "buttons": {
+            "unmute": "🔉 Unmute",
+            "unban": "🔓 Unban"
+        }
+    },
+    "general": {
+        "start": "👋 Welcome! Please choose your language:",
+        "lang_set": "Language set to English 🇬🇧",
+        "help": "<pre>📢 <b>General commands</b>\n• /start — Start the bot\n• /help  — Show this menu\n\n🛡️ <b>Filters and moderation</b>\n• /filters                     — Show current filter configuration\n• /censor_on /censor_off       — Enable/Disable blacklist-based censorship\n• /ai_censor_on /ai_censor_off — Enable/Disable AI-based censorship\n• /antispam_on /antispam_off   — Enable/Disable anti-spam filters\n• /blacklist_add &lt;word&gt;        — Add word to blacklist\n• /blacklist_remove &lt;word&gt;     — Remove word from blacklist\n• /blacklist                   — Show blacklist\n\n🚫 <b>Penalties and warnings</b>\n(by reply, @username or numeric user ID):\n• /mute &lt;time&gt; @user_or_id   — Mute user for the given time\n• /unmute @user_or_id           — Unmute user\n• /ban &lt;time&gt; @user_or_id    — Ban user for the given time\n• /unban @user_or_id            — Unban user\n• /kick @user_or_id             — Kick user\n• /warn @user_or_id             — Give warning\n• /warns @user_or_id            — Show warnings\n• /warns_reset @user_or_id      — Reset warnings\n\n<i>Format &lt;time&gt;: number + s, m, h or d (e.g. 30s, 10m, 2h, 1d)</i></pre>"
+    },
+    "decorators": {
+        "not_group": "❗ This command works in groups only.",
+        "not_supergroup": "❗ This command works in supergroups only.",
+        "user_is_not_admin": "❌ You don't have rights for this command.",
+        "bot_has_not_rights": "⚠ I don't have rights to edit users' rights.",
+        "self_targeted": "😅 I can't apply this action to myself."
+    },
+    "blacklist": {
+        "add": {
+            "success": "✅ Word <code>{word}</code> has been added to the blacklist.",
+            "no_args": "❗ Please specify a word to add."
+        },
+        "remove": {
+            "success": "❎ Word <code>{word}</code> has been removed from the blacklist.",
+            "no_args": "❗ Please specify a word to remove."
+        },
+        "empty": "📭 Black list is empty.",
+        "display": "🛑 Banned words:\n"
+    }
+}
