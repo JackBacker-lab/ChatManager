@@ -43,15 +43,6 @@ def _build_en_classifier() -> TextClassificationPipeline:
     )
 
 
-def _build_ua_classifier() -> TextClassificationPipeline:
-    """Create a Ukrainian toxicity classifier pipeline."""
-    return pipeline(
-        "text-classification",
-        model="ukr-detect/ukr-toxicity-classifier",
-        device=-1,
-    )
-
-
 TOXIC_LABELS = {
     "toxic",
     "insult",
@@ -72,32 +63,28 @@ class ToxicityDetector:
     """
 
     def __init__(self) -> None:
-        self._classifiers: list[TextClassificationPipeline] = []
-        self._initialized = False
+        self.classifiers: list[TextClassificationPipeline] = []
+        self.initialized = False
 
-    def _load_classifiers(self) -> None:
+    def load_classifiers(self) -> None:
         """Synchronously load all classifiers if not loaded yet."""
         try:
-            self._classifiers = [
-                _build_ru_classifier(),
-                _build_en_classifier(),
-                _build_ua_classifier(),
-            ]
-            self._initialized = True
+            self.classifiers = [_build_en_classifier(), _build_ru_classifier()]
+            self.initialized = True
         except Exception as e:
-            logging.exception("Failed to load toxicity classifiers: %s", e)
-            self._classifiers = []
-            self._initialized = True
+            logging.exception(f"Failed to load toxicity classifiers: {e}")
+            self.classifiers = []
+            self.initialized = True
 
     async def is_toxic(self, text: str, config: AICensorshipConfig) -> bool:
         """Return True if any classifier considers the text toxic."""
-        if not self._initialized:
-            self._load_classifiers()
-        if not self._classifiers:
+        if not self.initialized:
+            self.load_classifiers()
+        if not self.classifiers:
             return False
 
         results: list[ToxicResult] = []
-        for classifier in self._classifiers:
+        for classifier in self.classifiers:
             result_raw = classifier(text)
             result: ToxicResult = [
                 {"label": r["label"], "score": float(r["score"])} for r in result_raw

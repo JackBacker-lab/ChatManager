@@ -1,3 +1,6 @@
 [pytest]
 strict = true
 testpaths = ["tests"]
+markers = [
+    "slow: tests that are slow and can be skipped by default",
+]
