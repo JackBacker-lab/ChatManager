@@ -46,8 +46,8 @@ def test_toxicity_detector_load_classifiers_happy_path(monkeypatch: pytest.Monke
 
     assert detector.initialized
     assert detector.classifiers == [
-        fake_classifier_ru,
         fake_classifier_en,
+        fake_classifier_ru,
     ]
 
 
