@@ -42,12 +42,8 @@ async def ban_user(bot: Bot, chat_id: int, user_id: int, duration_seconds: int) 
     )
 
 
-@router.message(Command(commands=["ban", "sban"]))
-@bot_has_rights_message
-@user_is_admin_message
-@group_only
-async def ban_command_handler(message: Message):
-    """Apply a temporary ban to one or more target users."""
+async def ban_logic(message: Message):
+    """Core logic for /ban command without decorators."""
     text, bot, admin_user = require_command_context(message)
 
     duration_seconds = parse_duration(text.split("\n")[0].split()[-1])
@@ -66,12 +62,16 @@ async def ban_command_handler(message: Message):
     )
 
 
-@router.message(Command(commands=["unban", "sunban"]))
+@router.message(Command(commands=["ban", "sban"]))
 @bot_has_rights_message
 @user_is_admin_message
-@supergroup_only_message
-async def unban_command_handler(message: Message):
-    """Lift bans from one or more target users in the chat."""
+@group_only
+async def ban_command_handler(message: Message):
+    """Apply a temporary ban to one or more target users."""
+    await ban_logic(message)
+
+
+async def unban_logic(message: Message):
     text, bot, admin_user = require_command_context(message)
 
     async def do_unban(bot: Bot, chat_id: int, user_id: int):
@@ -80,16 +80,20 @@ async def unban_command_handler(message: Message):
     await process_action(message, text, bot, admin_user, "unban", do_unban)
 
 
-def _is_unban_callback(c: CallbackQuery) -> bool:
+@router.message(Command(commands=["unban", "sunban"]))
+@bot_has_rights_message
+@user_is_admin_message
+@supergroup_only_message
+async def unban_command_handler(message: Message):
+    """Lift bans from one or more target users in the chat."""
+    await unban_logic(message)
+
+
+def is_unban_callback(c: CallbackQuery) -> bool:
     return c.data is not None and c.data.startswith(UNBAN_CALLBACK_PREFIX)
 
 
-@router.callback_query(_is_unban_callback)
-@user_is_admin_callback
-@bot_has_rights_callback
-@supergroup_only_callback
-async def unban_callback_handler(callback: CallbackQuery):
-    """Handle unban callback presses and lift bans from selected users."""
+async def unban_callback_logic(callback: CallbackQuery):
     msg, data = await require_callback_context(callback)
     bot = await require_callback_bot(callback)
 
@@ -118,6 +122,15 @@ async def unban_callback_handler(callback: CallbackQuery):
         await callback.answer(
             t("moderation.unban.error", lang, e=str(e)), show_alert=True
         )
+
+
+@router.callback_query(is_unban_callback)
+@user_is_admin_callback
+@bot_has_rights_callback
+@supergroup_only_callback
+async def unban_callback_handler(callback: CallbackQuery):
+    """Handle unban callback presses and lift bans from selected users."""
+    await unban_callback_logic(callback)
 
 
 def get_unban_button(lang: str, target_users: list[User]) -> InlineKeyboardMarkup:

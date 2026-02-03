@@ -42,6 +42,7 @@ async def test_start_command_handler(
         ["set_lang:en", True],
         ["set_langen", False],
         ["notset_lang:en", False],
+        [None, False],
     ],
 )
 def test_is_set_lang_callback(data: str, expected_result: bool):
