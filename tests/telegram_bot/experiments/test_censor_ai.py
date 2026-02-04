@@ -54,6 +54,11 @@ def test_toxicity_detector_load_classifiers_happy_path(monkeypatch: pytest.Monke
 def test_toxicity_detector_load_classifiers_exception(monkeypatch: pytest.MonkeyPatch):
     detector = ToxicityDetector()
 
+    fake_classifier_en = Mock(name="en_classifier")
+    monkeypatch.setattr(
+        "telegram_bot.experiments.censor_ai._build_en_classifier",
+        Mock(return_value=fake_classifier_en),
+    )
     monkeypatch.setattr(
         "telegram_bot.experiments.censor_ai._build_ru_classifier",
         Mock(side_effect=Exception("exception_message")),

@@ -42,8 +42,8 @@ async def ban_user(bot: Bot, chat_id: int, user_id: int, duration_seconds: int) 
     )
 
 
-async def ban_logic(message: Message):
-    """Core logic for /ban command without decorators."""
+async def handle_ban_command(message: Message):
+    """Handle /ban: parse duration and schedule temporary bans for target users."""
     text, bot, admin_user = require_command_context(message)
 
     duration_seconds = parse_duration(text.split("\n")[0].split()[-1])
@@ -67,11 +67,12 @@ async def ban_logic(message: Message):
 @user_is_admin_message
 @group_only
 async def ban_command_handler(message: Message):
-    """Apply a temporary ban to one or more target users."""
-    await ban_logic(message)
+    """AIogram entrypoint for /ban."""
+    await handle_ban_command(message)
 
 
-async def unban_logic(message: Message):
+async def handle_unban_command(message: Message):
+    """Handle /unban: lift bans from one or more target users."""
     text, bot, admin_user = require_command_context(message)
 
     async def do_unban(bot: Bot, chat_id: int, user_id: int):
@@ -85,15 +86,16 @@ async def unban_logic(message: Message):
 @user_is_admin_message
 @supergroup_only_message
 async def unban_command_handler(message: Message):
-    """Lift bans from one or more target users in the chat."""
-    await unban_logic(message)
+    """Aiogram entrypoint for /unban."""
+    await handle_unban_command(message)
 
 
 def is_unban_callback(c: CallbackQuery) -> bool:
     return c.data is not None and c.data.startswith(UNBAN_CALLBACK_PREFIX)
 
 
-async def unban_callback_logic(callback: CallbackQuery):
+async def handle_unban_callback(callback: CallbackQuery):
+    """Handle unban callback presses and lift bans from selected users."""
     msg, data = await require_callback_context(callback)
     bot = await require_callback_bot(callback)
 
@@ -129,8 +131,8 @@ async def unban_callback_logic(callback: CallbackQuery):
 @bot_has_rights_callback
 @supergroup_only_callback
 async def unban_callback_handler(callback: CallbackQuery):
-    """Handle unban callback presses and lift bans from selected users."""
-    await unban_callback_logic(callback)
+    """Aiogram entrypoint for unban callback."""
+    await handle_unban_callback(callback)
 
 
 def get_unban_button(lang: str, target_users: list[User]) -> InlineKeyboardMarkup:

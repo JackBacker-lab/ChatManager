@@ -8,12 +8,12 @@ from aiogram.types import (
 )
 
 from telegram_bot.handlers.moderation.commands.ban import (
-    ban_logic,
     ban_user,
     get_unban_button,
+    handle_ban_command,
+    handle_unban_callback,
+    handle_unban_command,
     is_unban_callback,
-    unban_callback_logic,
-    unban_logic,
 )
 
 
@@ -40,7 +40,7 @@ async def test_ban_user(mock_time: Mock):
 @patch("telegram_bot.handlers.moderation.commands.ban.get_unban_button")
 @patch("telegram_bot.handlers.moderation.commands.ban.process_action")
 @patch("telegram_bot.handlers.moderation.commands.ban.require_command_context")
-async def test_ban_logic(
+async def test_handle_ban_command(
     mock_require_command_context: Mock,
     mock_process_action: Mock,
     mock_get_unban_button: Mock,
@@ -54,7 +54,7 @@ async def test_ban_logic(
     mock_require_command_context.return_value = (fake_text, fake_bot, fake_admin_user)
 
     # Act
-    await ban_logic(message)
+    await handle_ban_command(message)
 
     # Assert
     mock_require_command_context.assert_called_once_with(message)
@@ -83,7 +83,7 @@ async def test_ban_logic(
 @pytest.mark.asyncio
 @patch("telegram_bot.handlers.moderation.commands.ban.process_action")
 @patch("telegram_bot.handlers.moderation.commands.ban.require_command_context")
-async def test_unban_logic(
+async def test_handle_unban_command(
     mock_require_command_context: Mock,
     mock_process_action: Mock,
 ):
@@ -96,7 +96,7 @@ async def test_unban_logic(
     mock_require_command_context.return_value = (fake_text, fake_bot, fake_admin_user)
 
     # Act
-    await unban_logic(message)
+    await handle_unban_command(message)
 
     # Assert
     mock_require_command_context.assert_called_once_with(message)
@@ -163,7 +163,7 @@ def _setup_unban_callback_test(
 @patch("telegram_bot.handlers.moderation.commands.ban.get_chat_language")
 @patch("telegram_bot.handlers.moderation.commands.ban.require_callback_bot")
 @patch("telegram_bot.handlers.moderation.commands.ban.require_callback_context")
-async def test_unban_callback_logic_happy_path_single(
+async def test_handle_unban_callback_happy_path_single(
     mock_require_callback_context: Mock,
     mock_require_callback_bot: Mock,
     mock_get_chat_language: Mock,
@@ -186,7 +186,7 @@ async def test_unban_callback_logic_happy_path_single(
     callback = ctx["callback"]
 
     # Act
-    await unban_callback_logic(callback)
+    await handle_unban_callback(callback)
 
     # Assert
     mock_require_callback_context.assert_called_once_with(callback)
@@ -227,7 +227,7 @@ async def test_unban_callback_logic_happy_path_single(
 @patch("telegram_bot.handlers.moderation.commands.ban.get_chat_language")
 @patch("telegram_bot.handlers.moderation.commands.ban.require_callback_bot")
 @patch("telegram_bot.handlers.moderation.commands.ban.require_callback_context")
-async def test_unban_callback_logic_happy_path_multiple(
+async def test_handle_unban_callback_happy_path_multiple(
     mock_require_callback_context: Mock,
     mock_require_callback_bot: Mock,
     mock_get_chat_language: Mock,
@@ -252,7 +252,7 @@ async def test_unban_callback_logic_happy_path_multiple(
     callback = ctx["callback"]
 
     # Act
-    await unban_callback_logic(callback)
+    await handle_unban_callback(callback)
 
     # Assert
     mock_require_callback_context.assert_called_once_with(callback)
@@ -294,7 +294,7 @@ async def test_unban_callback_logic_happy_path_multiple(
 @patch("telegram_bot.handlers.moderation.commands.ban.get_chat_language")
 @patch("telegram_bot.handlers.moderation.commands.ban.require_callback_bot")
 @patch("telegram_bot.handlers.moderation.commands.ban.require_callback_context")
-async def test_unban_callback_logic_exception(
+async def test_handle_unban_callback_exception(
     mock_require_callback_context: Mock,
     mock_require_callback_bot: Mock,
     mock_get_chat_language: Mock,
@@ -323,7 +323,7 @@ async def test_unban_callback_logic_exception(
     )
 
     # Act
-    await unban_callback_logic(callback)
+    await handle_unban_callback(callback)
 
     # Assert
     mock_require_callback_context.assert_called_once_with(callback)
