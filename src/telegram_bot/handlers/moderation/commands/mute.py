@@ -44,12 +44,8 @@ async def mute_user(
     )
 
 
-@router.message(Command(commands=["mute", "smute"]))
-@user_is_admin_message
-@bot_has_rights_message
-@supergroup_only_message
-async def mute_command_handler(message: Message):
-    """Apply a temporary mute to one or more target users."""
+async def handle_mute_command(message: Message):
+    """Handle /mute: parse duration and schedule temporary mutes for target users."""
     text, bot, admin_user = require_command_context(message)
 
     duration_seconds = parse_duration(text.split("\n")[0].split()[-1])
@@ -68,12 +64,17 @@ async def mute_command_handler(message: Message):
     )
 
 
-@router.message(Command(commands=["unmute", "sunmute"]))
+@router.message(Command(commands=["mute", "smute"]))
 @user_is_admin_message
 @bot_has_rights_message
 @supergroup_only_message
-async def unmute_command_handler(message: Message):
-    """Lift mute from one or more target users in the chat."""
+async def mute_command_handler(message: Message):
+    """Aiogram entrypoint for /mute."""
+    await handle_mute_command(message)
+
+
+async def handle_unmute_command(message: Message):
+    """Handle /unmute: lift mute from one or more target users in the chat."""
     text, bot, admin_user = require_command_context(message)
 
     async def do_unmute(bot: Bot, chat_id: int, user_id: int):
@@ -87,15 +88,21 @@ async def unmute_command_handler(message: Message):
     await process_action(message, text, bot, admin_user, "unmute", do_unmute)
 
 
+@router.message(Command(commands=["unmute", "sunmute"]))
+@user_is_admin_message
+@bot_has_rights_message
+@supergroup_only_message
+async def unmute_command_handler(message: Message):
+    """Aiogram entrypoint for /unmute."""
+    await handle_unmute_command(message)
+
+
 def is_unmute_callback(c: CallbackQuery) -> bool:
     return c.data is not None and c.data.startswith(UNMUTE_CALLBACK_PREFIX)
 
 
-@router.callback_query(is_unmute_callback)
-@user_is_admin_callback
-@bot_has_rights_callback
-async def unmute_callback_handler(callback: CallbackQuery):
-    """Handle unban callback presses and lift mute from selected users."""
+async def handle_unmute_callback(callback: CallbackQuery):
+    """Handle unmute callback presses and lift mute from selected users."""
     msg, data = await require_callback_context(callback)
     bot = await require_callback_bot(callback)
 
@@ -130,6 +137,14 @@ async def unmute_callback_handler(callback: CallbackQuery):
         await callback.answer(
             t("moderation.unmute.error", lang, e=str(e)), show_alert=True
         )
+
+
+@router.callback_query(is_unmute_callback)
+@user_is_admin_callback
+@bot_has_rights_callback
+async def unmute_callback_handler(callback: CallbackQuery):
+    """Aiogram entrypoint for unmute callback."""
+    await handle_unmute_callback(callback)
 
 
 def get_unmute_button(lang: str, target_users: list[User]) -> InlineKeyboardMarkup:
