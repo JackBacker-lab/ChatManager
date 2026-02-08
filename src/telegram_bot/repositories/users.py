@@ -9,14 +9,9 @@ async def get_user_by_username(username: str) -> UserDTO | None:
         aiosqlite.connect(DB_PATH) as db,
         db.execute(
             """
-            SELECT (
-                id,
-                username,
-                full_name,
-                link,
-                updated_at
-            )
-            FROM users WHERE username = ?
+            SELECT id, username, full_name, link, updated_at
+            FROM users
+            WHERE username = ?
             """,
             (username,),
         ) as cursor,
@@ -67,7 +62,7 @@ async def upsert_user(
 
 async def remove_user(user_id: int):
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("DELETE FROM users WHERE id = ?", (user_id))
+        await db.execute("DELETE FROM users WHERE id = ?", (user_id,))
         await db.commit()
 
 

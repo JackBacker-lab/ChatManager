@@ -27,7 +27,6 @@ from telegram_bot.models.filters import (
     SpamConfig,
 )
 from telegram_bot.models.user import UserDTO
-from telegram_bot.services.api.post_service import safe_post_groups
 from telegram_bot.services.db.blacklist_service import get_blacklist_words
 from telegram_bot.services.db.chat_settings_service import (
     get_chat_filters,
@@ -94,7 +93,6 @@ async def handle_new_chat_members(message: Message, chat_id: int) -> bool:
                     username=user.username,
                 )
             )
-            await safe_post_groups(chat_id, user.id)
             logging.info(f"New user in group: {get_display_name(user)} ({user.id})")
         return True
     return False
@@ -105,7 +103,6 @@ async def handle_user_registration(chat_id: int, user: User) -> None:
     await register_user(
         UserDTO(id=user.id, full_name=user.full_name, username=user.username)
     )
-    await safe_post_groups(chat_id, user.id)
     logging.info(f"Received message from {get_display_name(user)} ({user.id})")
 
 

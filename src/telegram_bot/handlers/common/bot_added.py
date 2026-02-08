@@ -4,7 +4,6 @@ from aiogram import Router
 from aiogram.types import ChatMemberUpdated
 
 from telegram_bot.models.user import UserDTO
-from telegram_bot.services.api.post_service import safe_post_groups
 from telegram_bot.services.db.chat_service import add_chat
 from telegram_bot.services.db.users_service import register_user
 
@@ -27,4 +26,3 @@ async def bot_added(update: ChatMemberUpdated):
             await register_user(
                 UserDTO(id=user.id, full_name=user.full_name, username=user.username)
             )
-            await safe_post_groups(chat.id, admin.user.id)

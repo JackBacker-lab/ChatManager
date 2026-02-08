@@ -18,8 +18,9 @@ async def get_user(
     try:
         if user_id:
             return await get_user_by_id(user_id)
-        if username:
-            return await get_user_by_username(username)
+
+        return await get_user_by_username(username) if username else None
+
     except Exception as e:
         logging.exception(f"Failed to resolve user {user_id or username}: {e}")
         return None

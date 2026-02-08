@@ -10,21 +10,22 @@ from telegram_bot.handlers.moderation.guards import (
     user_is_admin_message,
 )
 from telegram_bot.i18n import t
-from telegram_bot.models.log import Log
-from telegram_bot.services.api.post_service import safe_post_log
+from telegram_bot.models.log import ActionStatus, Log
 from telegram_bot.services.db.chat_settings_service import get_chat_language
+from telegram_bot.services.db.logging_service import register_log
 from telegram_bot.services.db.warns_service import (
     add_user_warning,
     get_user_warnings,
     reset_user_warnings,
 )
 from telegram_bot.services.telegram.display import get_display_name
-from telegram_bot.services.telegram.processor import get_message_link, process_action
+from telegram_bot.services.telegram.message_links import get_message_link
+from telegram_bot.services.telegram.processor import process_action
 
 router = Router()
 
 
-async def _ban_user_and_send_message(
+async def ban_user_and_send_message(
     message: Message,
     text: str,
     bot: Bot,
@@ -37,8 +38,9 @@ async def _ban_user_and_send_message(
 
     Reset warnings for banned user, log action, and notify the chat.
     """
-    log_status = "success"
+    log_status = ActionStatus.SUCCESS
     log_details = ""
+    me: User | None = None
     try:
         await message.reply(
             t(
@@ -61,23 +63,23 @@ async def _ban_user_and_send_message(
         )
         await reset_user_warnings(chat_id, target_user.id)
     except Exception as e:
-        me = await bot.get_me()
-        log_status = "error"
+        if me is None:
+            me = await bot.get_me()
+        log_status = ActionStatus.ERROR
         log_details = str(e)
         await message.reply(t("moderation.ban.error", lang, e=str(e)))
 
     log = Log(
         chat_id=chat_id,
         status=log_status,
-        action="ban",
-        action_by_id=me.id,
+        action_name="ban",
+        called_by_id=me.id,
         target_id=target_user.id,
-        text=text,
-        link=link,
-        reason=t("moderation.warn.limit_reached"),
+        msg_text=text,
+        msg_link=link,
         details=log_details,
     )
-    await safe_post_log(log)
+    await register_log(log)
 
 
 @router.message(Command("warn"))
@@ -115,7 +117,7 @@ async def warn_user(message: Message):
     for warned_user in warned_users:
         count = await get_user_warnings(chat_id, warned_user.id)
         if count >= 3:
-            await _ban_user_and_send_message(
+            await ban_user_and_send_message(
                 message=message,
                 text=text,
                 bot=bot,

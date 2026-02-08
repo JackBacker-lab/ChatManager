@@ -7,9 +7,7 @@ from aiogram.types import (
     ChatMemberAdministrator,
     ChatMemberBanned,
     ChatMemberLeft,
-    ChatMemberMember,
     ChatMemberOwner,
-    ChatMemberRestricted,
     InlineKeyboardMarkup,
     Message,
     User,
@@ -17,23 +15,14 @@ from aiogram.types import (
 
 from telegram_bot.handlers.moderation.commands.utils.parsing import parse_duration
 from telegram_bot.i18n import t
-from telegram_bot.models.log import Log
-from telegram_bot.services.api.post_service import safe_post_log
+from telegram_bot.models.log import ActionStatus, Log
 from telegram_bot.services.db.chat_settings_service import get_chat_language
+from telegram_bot.services.db.logging_service import register_log
 from telegram_bot.services.telegram.build_messages import build_action_messages
 from telegram_bot.services.telegram.display import get_display_name
 from telegram_bot.services.telegram.message_links import get_message_link
 from telegram_bot.services.telegram.resolve_targets import get_target_members
-from telegram_bot.services.telegram.types import ActionLiteral
-
-CHAT_MEMBER_TYPES = (
-    ChatMemberOwner
-    | ChatMemberAdministrator
-    | ChatMemberMember
-    | ChatMemberRestricted
-    | ChatMemberLeft
-    | ChatMemberBanned
-)
+from telegram_bot.services.telegram.types import ActionLiteral, ChatMemberTypes
 
 
 def _split_text_and_parse_reason(text: str) -> tuple[str, str | None]:
@@ -122,7 +111,6 @@ async def process_action(
         action_name,
         action_func,
         link,
-        reason,
     )
 
     if silent_mode:
@@ -160,7 +148,6 @@ async def process_targets(
     action_name: ActionLiteral,
     action_func: Callable[[Bot, int, int], Awaitable[None]],
     link: str | None = None,
-    reason: str | None = None,
 ) -> tuple[list[User], list[str], list[str]]:
     """Process a list of target members for a moderation action.
 
@@ -179,45 +166,56 @@ async def process_targets(
             unknown_members_names.append(target_member)
             continue
 
-        if not isinstance(target_member, CHAT_MEMBER_TYPES):
+        if not isinstance(target_member, ChatMemberTypes):
             raise RuntimeError(
                 f"Unexpected ChatMember type: {type(target_member).__name__}. \
-                Expected one of: {CHAT_MEMBER_TYPES}"
+                Expected one of: {ChatMemberTypes}"
             )
 
-        if _can_user_be_restricted(target_member, bot.id, admin_user.id):
+        if _should_skip_target(target_member, bot.id, admin_user.id):
             skipped_members_names.append(get_display_name(target_member.user))
+            log = Log(
+                chat_id=chat_id,
+                status=ActionStatus.SKIPPED,
+                action_name=action_name,
+                called_by_id=admin_user.id,
+                target_id=target_member.user.id,
+                msg_text=text,
+                msg_link=link,
+            )
+            await register_log(log)
             continue
+
+        log_status = ActionStatus.SUCCESS
+        log_details: str | None = None
 
         try:
             acted_users.append(target_member.user)
             await action_func(bot, chat_id, target_member.user.id)
-            log_status = "success"
-            log_details = ""
+            log_status = ActionStatus.SUCCESS
 
         except Exception as e:
             logging.info(f"Error while {action_name}: {e}")
-            log_status = "error"
+            log_status = ActionStatus.ERROR
             log_details = str(e)
 
         log = Log(
             chat_id=chat_id,
             status=log_status,
-            action=action_name,
-            action_by_id=admin_user.id,
+            action_name=action_name,
+            called_by_id=admin_user.id,
             target_id=target_member.user.id,
-            text=text,
-            link=link,
-            reason=reason,
+            msg_text=text,
+            msg_link=link,
             details=log_details,
         )
-        await safe_post_log(log)
+        await register_log(log)
 
     return acted_users, skipped_members_names, unknown_members_names
 
 
-def _can_user_be_restricted(
-    member: CHAT_MEMBER_TYPES,
+def _should_skip_target(
+    member: ChatMemberTypes,
     bot_id: int,
     admin_user_id: int,
 ) -> bool:

@@ -11,26 +11,24 @@ async def add_log(log: Log):
             INSERT INTO logs (
                 chat_id,
                 status,
-                action,
-                action_by_id,
+                action_name,
+                called_by_id,
                 target_id,
-                text,
-                link,
-                reason,
+                msg_text,
+                msg_link,
                 details,
                 timestamp
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 log.chat_id,
-                log.status,
-                log.action,
-                log.action_by_id,
+                log.status.value,
+                log.action_name,
+                log.called_by_id,
                 log.target_id,
-                log.text,
-                log.link,
-                log.reason,
+                log.msg_text,
+                log.msg_link,
                 log.details,
                 log.timestamp,
             ),
