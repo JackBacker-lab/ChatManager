@@ -82,11 +82,7 @@ async def ban_user_and_send_message(
     await register_log(log)
 
 
-@router.message(Command("warn"))
-@bot_has_rights_message
-@user_is_admin_message
-@group_only
-async def warn_user(message: Message):
+async def handle_warn_command(message: Message):
     """Warn one or more target users in the chat.
 
     Increment the warning counter for target users, send a summary to the chat,
@@ -108,7 +104,6 @@ async def warn_user(message: Message):
         admin_user,
         "warn",
         do_warn,
-        reply_markup_builder=get_unban_button,
     )
 
     if warned_users is None:
@@ -128,11 +123,16 @@ async def warn_user(message: Message):
             )
 
 
-@router.message(Command("warns_reset"))
+@router.message(Command("warn"))
 @bot_has_rights_message
 @user_is_admin_message
 @group_only
-async def reset_warns(message: Message):
+async def warn_command_handler(message: Message):
+    """Aiogram entrypoint for /warn."""
+    await handle_warn_command(message)
+
+
+async def handle_warns_reset_command(message: Message):
     """Reset warnings for one or more target users."""
     text, bot, admin_user = require_command_context(message)
 
@@ -146,5 +146,13 @@ async def reset_warns(message: Message):
         admin_user,
         "reset_warns",
         do_reset_warns,
-        reply_markup_builder=get_unban_button,
     )
+
+
+@router.message(Command("warns_reset"))
+@bot_has_rights_message
+@user_is_admin_message
+@group_only
+async def warns_reset_command_handler(message: Message):
+    """Aiogram entrypoint for /warns_reset."""
+    await handle_warns_reset_command(message)

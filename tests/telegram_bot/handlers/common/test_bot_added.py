@@ -7,12 +7,9 @@ from telegram_bot.models.user import UserDTO
 
 
 @pytest.mark.asyncio
-@patch("telegram_bot.handlers.common.bot_added.safe_post_groups")
 @patch("telegram_bot.handlers.common.bot_added.register_user")
 @patch("telegram_bot.handlers.common.bot_added.add_chat")
-async def test_bot_added(
-    mock_add_chat: Mock, mock_register_user: Mock, mock_safe_post_groups: Mock
-):
+async def test_bot_added(mock_add_chat: Mock, mock_register_user: Mock):
     # Arrange
     fake_old_chat_member_status = "kicked"
     fake_new_chat_member_status = "member"
@@ -52,5 +49,3 @@ async def test_bot_added(
     assert user_dto.id == fake_admin_user_id
     assert user_dto.full_name == fake_admin_full_name
     assert user_dto.username == fake_admin_username
-
-    mock_safe_post_groups.assert_called_once_with(fake_chat_id, fake_admin_user_id)
